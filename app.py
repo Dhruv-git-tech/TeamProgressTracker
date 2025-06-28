@@ -152,7 +152,10 @@ st.markdown("## 🌟 Team Progress Overview (Current Day)")
 today_date, today_day = get_today()
 progress = st.session_state['progress']
 def has_any_progress(user_progress):
-    return any(v['progress'].strip() for v in user_progress.values())
+    return any(
+        isinstance(v, dict) and 'progress' in v and str(v['progress']).strip()
+        for v in user_progress.values()
+    )
 all_names = [name for name, prog in progress.items() if name and has_any_progress(prog)]
 for real_name in all_names:
     prog = progress[real_name][today_date]['progress'] if today_date in progress[real_name] else ""
