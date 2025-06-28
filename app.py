@@ -128,7 +128,10 @@ st.markdown("---")
 st.markdown("## 🌟 Team Progress Overview (Current Day)")
 today = datetime.datetime.now().strftime("%A")
 progress = st.session_state['progress']
-all_names = list(progress.keys())
+# Only show real names with at least one progress record
+def has_any_progress(user_progress):
+    return any(v.strip() for v in user_progress.values())
+all_names = [name for name, prog in progress.items() if name and has_any_progress(prog)]
 for real_name in all_names:
     prog = progress[real_name].get(today, "")
     color = f"hsl({(all_names.index(real_name)*30)%360}, 80%, 80%)"
