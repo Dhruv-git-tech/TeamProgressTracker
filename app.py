@@ -158,6 +158,32 @@ if role == ADMIN_USERNAME:
             st.dataframe(df.sort_values(["Date", "Intern Name"], ascending=[False, True]), use_container_width=True)
         else:
             st.info("No progress records yet.")
+        # Edit/Delete controls for each entry
+        st.markdown("### Edit or Delete Progress Entries")
+        for intern in interns:
+            for date, entry in progress[intern].items():
+                if isinstance(entry, dict) and "day" in entry and "progress" in entry:
+                    st.markdown(f"**{intern}** - {date} ({entry['day']}):")
+                    st.markdown(f"> {entry['progress']}")
+                    edit_key = f"edit_{intern}_{date}"
+                    delete_key = f"delete_{intern}_{date}"
+                    if st.button("Edit", key=edit_key):
+                        st.session_state[edit_key] = True
+                    if st.session_state.get(edit_key, False):
+                        new_val = st.text_area("Edit progress:", value=entry['progress'], key=f"edit_area_{intern}_{date}")
+                        if st.button("Save", key=f"save_{intern}_{date}"):
+                            progress[intern][date]['progress'] = new_val
+                            save_progress(dict(progress))
+                            st.session_state[edit_key] = False
+                            st.success("Progress updated!")
+                        if st.button("Cancel", key=f"cancel_{intern}_{date}"):
+                            st.session_state[edit_key] = False
+                    if st.button("Delete", key=delete_key):
+                        if st.confirm(f"Are you sure you want to delete {intern}'s progress for {date}?", key=f"confirm_{intern}_{date}"):
+                            del progress[intern][date]
+                            save_progress(dict(progress))
+                            st.success("Progress entry deleted!")
+                            st.experimental_rerun()
         # Export
         csv_df = export_csv(progress)
         st.download_button(
