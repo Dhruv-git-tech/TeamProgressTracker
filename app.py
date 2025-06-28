@@ -166,23 +166,26 @@ if role == ADMIN_USERNAME:
                     st.markdown(f"**{intern}** - {date} ({entry['day']}):")
                     st.markdown(f"> {entry['progress']}")
                     edit_key = f"edit_{intern}_{date}"
+                    edit_area_key = f"edit_area_{intern}_{date}"
                     delete_key = f"delete_{intern}_{date}"
-                    # Use button return value for edit
+                    # Edit mode toggle
                     if st.button("Edit", key=edit_key):
-                        new_val = st.text_area("Edit progress:", value=entry['progress'], key=f"edit_area_{intern}_{date}")
+                        st.session_state[edit_key] = True
+                        st.session_state[edit_area_key] = entry['progress']
+                    if st.session_state.get(edit_key, False):
+                        new_val = st.text_area("Edit progress:", value=st.session_state.get(edit_area_key, entry['progress']), key=edit_area_key)
                         if st.button("Save", key=f"save_{intern}_{date}"):
                             progress[intern][date]['progress'] = new_val
                             save_progress(dict(progress))
-                            st.success("Progress updated!")
-                            st.experimental_rerun()
+                            st.session_state[edit_key] = False
+                            st.success("Progress updated! Please refresh the page to see changes.")
                         if st.button("Cancel", key=f"cancel_{intern}_{date}"):
-                            st.experimental_rerun()
+                            st.session_state[edit_key] = False
                     # Delete button
                     if st.button("Delete", key=delete_key):
                         del progress[intern][date]
                         save_progress(dict(progress))
-                        st.success("Progress entry deleted!")
-                        st.experimental_rerun()
+                        st.success("Progress entry deleted! Please refresh the page to see changes.")
         # Export
         csv_df = export_csv(progress)
         st.download_button(
