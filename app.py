@@ -167,23 +167,22 @@ if role == ADMIN_USERNAME:
                     st.markdown(f"> {entry['progress']}")
                     edit_key = f"edit_{intern}_{date}"
                     delete_key = f"delete_{intern}_{date}"
+                    # Use button return value for edit
                     if st.button("Edit", key=edit_key):
-                        st.session_state[edit_key] = True
-                    if st.session_state.get(edit_key, False):
                         new_val = st.text_area("Edit progress:", value=entry['progress'], key=f"edit_area_{intern}_{date}")
                         if st.button("Save", key=f"save_{intern}_{date}"):
                             progress[intern][date]['progress'] = new_val
                             save_progress(dict(progress))
-                            st.session_state[edit_key] = False
                             st.success("Progress updated!")
-                        if st.button("Cancel", key=f"cancel_{intern}_{date}"):
-                            st.session_state[edit_key] = False
-                    if st.button("Delete", key=delete_key):
-                        if st.confirm(f"Are you sure you want to delete {intern}'s progress for {date}?", key=f"confirm_{intern}_{date}"):
-                            del progress[intern][date]
-                            save_progress(dict(progress))
-                            st.success("Progress entry deleted!")
                             st.experimental_rerun()
+                        if st.button("Cancel", key=f"cancel_{intern}_{date}"):
+                            st.experimental_rerun()
+                    # Delete button
+                    if st.button("Delete", key=delete_key):
+                        del progress[intern][date]
+                        save_progress(dict(progress))
+                        st.success("Progress entry deleted!")
+                        st.experimental_rerun()
         # Export
         csv_df = export_csv(progress)
         st.download_button(
