@@ -12,6 +12,20 @@ USER_ROLES = ["Creator", "AI Developer Intern"]
 PROGRESS_FILE = Path("progress.json")
 DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
+# --- Motivational Quotes ---
+MOTIVATIONAL_QUOTES = [
+    "Success is not the key to happiness. Happiness is the key to success. If you love what you are doing, you will be successful.",
+    "The only way to do great work is to love what you do. – Steve Jobs",
+    "Your passion is waiting for your courage to catch up.",
+    "Dream big, work hard, stay focused, and surround yourself with good people.",
+    "Great things never come from comfort zones.",
+    "Don't watch the clock; do what it does. Keep going.",
+    "The future depends on what you do today. – Mahatma Gandhi",
+    "Believe you can and you're halfway there. – Theodore Roosevelt",
+    "Teamwork makes the dream work.",
+    "Every accomplishment starts with the decision to try."
+]
+
 # --- Helpers ---
 def load_progress():
     if PROGRESS_FILE.exists():
@@ -44,6 +58,12 @@ def export_csv(progress):
     df = pd.DataFrame(rows)
     return df
 
+def get_daily_quote():
+    # Use the date to pick a different quote each day
+    today = datetime.now().date()
+    idx = today.toordinal() % len(MOTIVATIONAL_QUOTES)
+    return MOTIVATIONAL_QUOTES[idx]
+
 # --- Custom CSS for more color and animation ---
 st.markdown("""
     <style>
@@ -73,6 +93,8 @@ if role == "AI Developer Intern":
         today_date, today_day = get_today()
         st.markdown(f"<h3 style='color:#6a0572;'>Welcome AI Developer Intern!</h3>", unsafe_allow_html=True)
         st.markdown(f"### Welcome, {name}!")
+        # Show motivational quote
+        st.markdown(f"<div style='background:#fff3e6cc;border-radius:1em;padding:1em;margin-bottom:1em;box-shadow:0 2px 8px #e0c3fc55;font-size:1.2em;color:#6a0572;text-align:center;'><b>Motivation for Today:</b><br>“{get_daily_quote()}”</div>", unsafe_allow_html=True)
         st.markdown(f"**Today:** {today_day}, {today_date}")
         st.markdown('<div class="progress-box">', unsafe_allow_html=True)
         progress = st.session_state['progress']
