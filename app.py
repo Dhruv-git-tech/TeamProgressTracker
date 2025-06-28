@@ -5,16 +5,14 @@ import plotly.graph_objects as go
 import pandas as pd
 import datetime
 
-# --- Demo user list ---
-TEAM_MEMBERS = [f"Member {i+1}" for i in range(12)]
+# --- User roles ---
+USER_ROLES = ["Creator", "AI Developer Intern"]
 ADMIN_USERNAME = "Creator"
-ALL_USERS = [ADMIN_USERNAME] + TEAM_MEMBERS
 ADMIN_PASSWORD = "Dhruv@123"  # Change this to your desired password
 DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 # --- Persistent storage ---
 PROGRESS_FILE = Path("progress.json")
-NAMES_FILE = Path("member_names.json")
 
 def load_progress():
     try:
@@ -29,20 +27,8 @@ def save_progress(progress):
     with open(PROGRESS_FILE, "w") as f:
         json.dump(progress, f)
 
-def load_names():
-    if NAMES_FILE.exists():
-        with open(NAMES_FILE, "r") as f:
-            return json.load(f)
-    return {user: "" for user in TEAM_MEMBERS}
-
-def save_names(names):
-    with open(NAMES_FILE, "w") as f:
-        json.dump(names, f)
-
 if 'progress' not in st.session_state:
     st.session_state['progress'] = load_progress()
-if 'member_names' not in st.session_state:
-    st.session_state['member_names'] = load_names()
 
 # --- Custom CSS for more color and animation ---
 st.markdown("""
@@ -59,12 +45,34 @@ st.markdown("""
 st.markdown('<div class="big-title">Team Progress Tracker</div>', unsafe_allow_html=True)
 
 # --- User selection ---
-st.sidebar.title("Select User")
-name = st.sidebar.selectbox("Who are you?", ALL_USERS)
+st.sidebar.title("Login")
+role = st.sidebar.selectbox("I am a...", USER_ROLES)
 
-# --- Admin password check ---
-admin_authenticated = False
-if name == ADMIN_USERNAME:
+# --- AI Developer Intern login ---
+if role == "AI Developer Intern":
+    name = st.sidebar.text_input("Enter your name:")
+    if name.strip():
+        st.markdown(f"<h3 style='color:#6a0572;'>Welcome AI Developer Intern!</h3>", unsafe_allow_html=True)
+        st.markdown(f"### Welcome, {name}!")
+        st.markdown('<div class="progress-box">', unsafe_allow_html=True)
+        today = datetime.datetime.now().strftime("%A")
+        progress = st.session_state['progress']
+        if name not in progress:
+            progress[name] = {day: "" for day in DAYS_OF_WEEK}
+        prog_val = progress[name].get(today, "")
+        progress_input = st.text_area(f"Your Progress for {today}", value=prog_val)
+        if st.button("Update Progress"):
+            progress[name][today] = progress_input
+            save_progress(dict(progress))
+            st.toast("✅ Progress updated!", icon="✅")
+        st.markdown('</div>', unsafe_allow_html=True)
+        st.balloons()
+    else:
+        st.info("Please enter your name to continue.")
+
+# --- Creator (admin) login ---
+if role == ADMIN_USERNAME:
+    admin_authenticated = False
     admin_password = st.sidebar.text_input("Enter admin password:", type="password")
     if st.sidebar.button("Login as Admin"):
         if admin_password == ADMIN_PASSWORD:
@@ -74,106 +82,65 @@ if name == ADMIN_USERNAME:
             st.session_state['admin_authenticated'] = False
             st.sidebar.error("Incorrect password.")
     admin_authenticated = st.session_state.get('admin_authenticated', False)
-
-# --- Member name entry on first login ---
-if name != ADMIN_USERNAME:
-    member_names = st.session_state['member_names']
-    progress = st.session_state['progress']
-    if not member_names[name]:
-        real_name = st.text_input("Enter your name (will be shown to admin):", key=f"realname_{name}")
-        if st.button("Save Name") and real_name.strip():
-            member_names[name] = real_name.strip()
-            # If this is a new real name, create a progress record for them
-            if real_name.strip() not in progress:
-                progress[real_name.strip()] = {day: "" for day in DAYS_OF_WEEK}
-                save_progress(progress)
-            save_names(dict(member_names))
-            st.success("Name saved! Please refresh the page or select your user again to continue with your progress update.")
-    else:
-        real_name = member_names[name]
-        st.markdown(f"<h3 style='color:#6a0572;'>Welcome AI Developer Interns!</h3>", unsafe_allow_html=True)
-        st.markdown(f"### Welcome, {real_name}!")
-        st.markdown('<div class="progress-box">', unsafe_allow_html=True)
-        today = datetime.datetime.now().strftime("%A")
-        # Use real name as key for progress
-        if real_name not in progress:
-            progress[real_name] = {day: "" for day in DAYS_OF_WEEK}
-        prog_val = progress[real_name].get(today, "")
-        progress_input = st.text_area(f"Your Progress for {today}", value=prog_val)
-        if st.button("Update Progress"):
-            progress[real_name][today] = progress_input
-            save_progress(dict(progress))
-            st.toast("✅ Progress updated!", icon="✅")
+    if admin_authenticated:
+        st.markdown("<h3 style='color:#6a0572;'>Welcome TechLead!</h3>", unsafe_allow_html=True)
+        st.markdown('<div class="admin-section">', unsafe_allow_html=True)
+        st.markdown("## 👑 Admin Dashboard (Private)")
+        st.markdown("### Team Weekly Progress Overview:")
+        progress = st.session_state['progress']
+        all_names = list(progress.keys())
+        for real_name in all_names:
+            st.markdown(f"#### {real_name}")
+            for day in DAYS_OF_WEEK:
+                val = progress[real_name].get(day, "")
+                new_val = st.text_area(f"{real_name} - {day}", value=val, key=f"admin_{real_name}_{day}")
+                if st.button(f"Update {real_name} - {day}", key=f"btn_{real_name}_{day}"):
+                    progress[real_name][day] = new_val
+                    save_progress(dict(progress))
+                    st.toast(f"✅ Updated {real_name} - {day}", icon="✅")
         st.markdown('</div>', unsafe_allow_html=True)
-        st.balloons()
-# --- Admin view ---
-elif admin_authenticated:
-    st.markdown("<h3 style='color:#6a0572;'>Welcome TechLead!</h3>", unsafe_allow_html=True)
-    st.markdown('<div class="admin-section">', unsafe_allow_html=True)
-    st.markdown("## 👑 Admin Dashboard (Private)")
-    st.markdown("### Team Weekly Progress Overview:")
-    member_names = st.session_state['member_names']
-    progress = st.session_state['progress']
-    # Show all real names that have progress
-    all_real_names = [member_names[m] for m in TEAM_MEMBERS if member_names[m]]
-    # Add any extra names in progress (in case of manual edits)
-    all_real_names = list(set(all_real_names) | set(progress.keys()))
-    for real_name in all_real_names:
-        st.markdown(f"#### {real_name}")
-        if real_name not in progress:
-            progress[real_name] = {day: "" for day in DAYS_OF_WEEK}
-        for day in DAYS_OF_WEEK:
-            val = progress[real_name].get(day, "")
-            new_val = st.text_area(f"{real_name} - {day}", value=val, key=f"admin_{real_name}_{day}")
-            if st.button(f"Update {real_name} - {day}", key=f"btn_{real_name}_{day}"):
-                progress[real_name][day] = new_val
-                save_progress(dict(progress))
-                st.toast(f"✅ Updated {real_name} - {day}", icon="✅")
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.snow()
-    # Confetti if all members have updated all days
-    if all(all(progress[rn][d].strip() for d in DAYS_OF_WEEK) for rn in all_real_names):
-        st.success("🎉 All members have updated their weekly progress!")
-    # Team completion chart (number of members who updated all days)
-    completed = sum(1 for rn in all_real_names if all(progress[rn][d].strip() for d in DAYS_OF_WEEK))
-    fig = go.Figure(go.Indicator(
-        mode = "gauge+number",
-        value = completed,
-        domain = {'x': [0, 1], 'y': [0, 1]},
-        title = {'text': "Members with Full Weekly Progress"},
-        gauge = {
-            'axis': {'range': [0, len(all_real_names)]},
-            'bar': {'color': "#6a0572"},
-            'steps' : [
-                {'range': [0, len(all_real_names)//2], 'color': "#f5d6e6"},
-                {'range': [len(all_real_names)//2, len(all_real_names)], 'color': "#c3cfe2"}
-            ],
-        }
-    ))
-    st.plotly_chart(fig, use_container_width=True)
-# --- Block admin dashboard if not authenticated ---
-elif name == ADMIN_USERNAME:
-    st.warning("Please enter the correct admin password to view the dashboard.")
+        st.snow()
+        # Confetti if all members have updated all days
+        if all(all(progress[rn][d].strip() for d in DAYS_OF_WEEK) for rn in all_names):
+            st.success("🎉 All members have updated their weekly progress!")
+        # Team completion chart (number of members who updated all days)
+        completed = sum(1 for rn in all_names if all(progress[rn][d].strip() for d in DAYS_OF_WEEK))
+        fig = go.Figure(go.Indicator(
+            mode = "gauge+number",
+            value = completed,
+            domain = {'x': [0, 1], 'y': [0, 1]},
+            title = {'text': "Members with Full Weekly Progress"},
+            gauge = {
+                'axis': {'range': [0, len(all_names)]},
+                'bar': {'color': "#6a0572"},
+                'steps' : [
+                    {'range': [0, len(all_names)//2], 'color': "#f5d6e6"},
+                    {'range': [len(all_names)//2, len(all_names)], 'color': "#c3cfe2"}
+                ],
+            }
+        ))
+        st.plotly_chart(fig, use_container_width=True)
+    elif admin_password:
+        st.warning("Please enter the correct admin password to view the dashboard.")
+
 # --- Animated/Colorful Overview (for all users) ---
 st.markdown("---")
 st.markdown("## 🌟 Team Progress Overview (Current Day)")
 today = datetime.datetime.now().strftime("%A")
-member_names = st.session_state['member_names']
 progress = st.session_state['progress']
-all_real_names = [member_names[m] for m in TEAM_MEMBERS if member_names[m]]
-all_real_names = list(set(all_real_names) | set(progress.keys()))
-for real_name in all_real_names:
+all_names = list(progress.keys())
+for real_name in all_names:
     prog = progress[real_name].get(today, "")
-    color = f"hsl({(all_real_names.index(real_name)*30)%360}, 80%, 80%)"
+    color = f"hsl({(all_names.index(real_name)*30)%360}, 80%, 80%)"
     st.markdown(f'<div style="background:{color};border-radius:0.5em;padding:0.5em 1em;margin-bottom:0.5em;"> <b>{real_name}:</b> {prog or "<i>No update yet</i>"} </div>', unsafe_allow_html=True)
 # Animated bar chart for team completion (today)
 st.markdown("### Team Progress Completion (Today)")
-bar_colors = ["#6a0572" if progress[rn].get(today, "").strip() else "#e0c3fc" for rn in all_real_names]
+bar_colors = ["#6a0572" if progress[rn].get(today, "").strip() else "#e0c3fc" for rn in all_names]
 bar_fig = go.Figure(go.Bar(
-    x=all_real_names,
-    y=[1 if progress[rn].get(today, "").strip() else 0 for rn in all_real_names],
+    x=all_names,
+    y=[1 if progress[rn].get(today, "").strip() else 0 for rn in all_names],
     marker_color=bar_colors,
-    text=["Done" if progress[rn].get(today, "").strip() else "Pending" for rn in all_real_names],
+    text=["Done" if progress[rn].get(today, "").strip() else "Pending" for rn in all_names],
     textposition="outside"
 ))
 bar_fig.update_layout(
