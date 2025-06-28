@@ -34,12 +34,13 @@ def export_csv(progress):
     rows = []
     for intern, days in progress.items():
         for date, entry in days.items():
-            rows.append({
-                "Intern Name": intern,
-                "Date": date,
-                "Day": entry["day"],
-                "Progress": entry["progress"]
-            })
+            if isinstance(entry, dict) and "day" in entry and "progress" in entry:
+                rows.append({
+                    "Intern Name": intern,
+                    "Date": date,
+                    "Day": entry["day"],
+                    "Progress": entry["progress"]
+                })
     df = pd.DataFrame(rows)
     return df
 
