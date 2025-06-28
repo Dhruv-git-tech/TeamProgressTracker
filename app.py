@@ -93,20 +93,19 @@ if name != ADMIN_USERNAME:
         if st.button("Save Name") and real_name.strip():
             st.session_state['member_names'][name] = real_name.strip()
             save_names(dict(st.session_state['member_names']))
-            st.success("Name saved! Please continue with your progress update.")
-            st.experimental_rerun()
-    else:
-        st.markdown(f"<h3 style='color:#6a0572;'>Welcome AI Developer Interns!</h3>", unsafe_allow_html=True)
-        st.markdown(f"### Welcome, {st.session_state['member_names'][name]}!")
-        st.markdown('<div class="progress-box">', unsafe_allow_html=True)
-        today = datetime.datetime.now().strftime("%A")
-        progress = st.text_area(f"Your Progress for {today}", value=st.session_state['progress'][name].get(today, ""))
-        if st.button("Update Progress"):
-            st.session_state['progress'][name][today] = progress
-            save_progress(dict(st.session_state['progress']))
-            st.toast("✅ Progress updated!", icon="✅")
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.balloons()
+            st.success("Name saved! Please refresh the page or select your user again to continue with your progress update.")
+        else:
+            st.markdown(f"<h3 style='color:#6a0572;'>Welcome AI Developer Interns!</h3>", unsafe_allow_html=True)
+            st.markdown(f"### Welcome, {st.session_state['member_names'][name]}!")
+            st.markdown('<div class="progress-box">', unsafe_allow_html=True)
+            today = datetime.datetime.now().strftime("%A")
+            progress = st.text_area(f"Your Progress for {today}", value=st.session_state['progress'][name].get(today, ""))
+            if st.button("Update Progress"):
+                st.session_state['progress'][name][today] = progress
+                save_progress(dict(st.session_state['progress']))
+                st.toast("✅ Progress updated!", icon="✅")
+            st.markdown('</div>', unsafe_allow_html=True)
+            st.balloons()
 # --- Admin view ---
 elif admin_authenticated:
     st.markdown("<h3 style='color:#6a0572;'>Welcome TechLead!</h3>", unsafe_allow_html=True)
