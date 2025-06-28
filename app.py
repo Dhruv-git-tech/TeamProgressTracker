@@ -118,12 +118,13 @@ if role == ADMIN_USERNAME:
         rows = []
         for intern in interns:
             for date, entry in progress[intern].items():
-                rows.append({
-                    "Intern Name": intern,
-                    "Date": date,
-                    "Day": entry["day"],
-                    "Progress": entry["progress"]
-                })
+                if isinstance(entry, dict) and "day" in entry and "progress" in entry:
+                    rows.append({
+                        "Intern Name": intern,
+                        "Date": date,
+                        "Day": entry["day"],
+                        "Progress": entry["progress"]
+                    })
         df = pd.DataFrame(rows)
         st.markdown("### All Progress Records")
         st.dataframe(df.sort_values(["Date", "Intern Name"], ascending=[False, True]), use_container_width=True)
