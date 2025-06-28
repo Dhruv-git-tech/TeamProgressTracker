@@ -136,7 +136,7 @@ if role == ADMIN_USERNAME:
         st.markdown('<div class="admin-section">', unsafe_allow_html=True)
         # Show team objective quote
         st.markdown(f"<div style='background:#fff3e6cc;border-radius:1em;padding:1em;margin-bottom:1em;box-shadow:0 2px 8px #e0c3fc55;font-size:1.2em;color:#6a0572;text-align:center;'><b>Team Objective:</b><br>“{TEAM_OBJECTIVE_QUOTE}”</div>", unsafe_allow_html=True)
-        st.markdown("## �� Admin Dashboard")
+        st.markdown("## Admin Dashboard")
         progress = st.session_state['progress']
         today_date, today_day = get_today()
         # List of all interns
@@ -154,7 +154,10 @@ if role == ADMIN_USERNAME:
                     })
         df = pd.DataFrame(rows)
         st.markdown("### All Progress Records")
-        st.dataframe(df.sort_values(["Date", "Intern Name"], ascending=[False, True]), use_container_width=True)
+        if not df.empty:
+            st.dataframe(df.sort_values(["Date", "Intern Name"], ascending=[False, True]), use_container_width=True)
+        else:
+            st.info("No progress records yet.")
         # Export
         csv_df = export_csv(progress)
         st.download_button(
