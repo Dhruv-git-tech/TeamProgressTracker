@@ -26,6 +26,9 @@ MOTIVATIONAL_QUOTES = [
     "Every accomplishment starts with the decision to try."
 ]
 
+# --- Team Objective Quote ---
+TEAM_OBJECTIVE_QUOTE = "Great things never come from comfort zones. Let's build something remarkable — together."
+
 # --- Helpers ---
 def load_progress():
     if PROGRESS_FILE.exists():
@@ -93,8 +96,8 @@ if role == "AI Developer Intern":
         today_date, today_day = get_today()
         st.markdown(f"<h3 style='color:#6a0572;'>Welcome AI Developer Intern!</h3>", unsafe_allow_html=True)
         st.markdown(f"### Welcome, {name}!")
-        # Show motivational quote
-        st.markdown(f"<div style='background:#fff3e6cc;border-radius:1em;padding:1em;margin-bottom:1em;box-shadow:0 2px 8px #e0c3fc55;font-size:1.2em;color:#6a0572;text-align:center;'><b>Motivation for Today:</b><br>“{get_daily_quote()}”</div>", unsafe_allow_html=True)
+        # Show team objective quote
+        st.markdown(f"<div style='background:#fff3e6cc;border-radius:1em;padding:1em;margin-bottom:1em;box-shadow:0 2px 8px #e0c3fc55;font-size:1.2em;color:#6a0572;text-align:center;'><b>Team Objective:</b><br>“{TEAM_OBJECTIVE_QUOTE}”</div>", unsafe_allow_html=True)
         st.markdown(f"**Today:** {today_day}, {today_date}")
         st.markdown('<div class="progress-box">', unsafe_allow_html=True)
         progress = st.session_state['progress']
@@ -130,9 +133,10 @@ if role == ADMIN_USERNAME:
             st.sidebar.error("Incorrect password.")
     admin_authenticated = st.session_state.get('admin_authenticated', False)
     if admin_authenticated:
-        st.markdown("<h3 style='color:#6a0572;'>Welcome TechLead!</h3>", unsafe_allow_html=True)
         st.markdown('<div class="admin-section">', unsafe_allow_html=True)
-        st.markdown("## 👑 Admin Dashboard")
+        # Show team objective quote
+        st.markdown(f"<div style='background:#fff3e6cc;border-radius:1em;padding:1em;margin-bottom:1em;box-shadow:0 2px 8px #e0c3fc55;font-size:1.2em;color:#6a0572;text-align:center;'><b>Team Objective:</b><br>“{TEAM_OBJECTIVE_QUOTE}”</div>", unsafe_allow_html=True)
+        st.markdown("## �� Admin Dashboard")
         progress = st.session_state['progress']
         today_date, today_day = get_today()
         # List of all interns
